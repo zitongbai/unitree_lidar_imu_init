@@ -1,0 +1,20 @@
+<launch>
+  <arg name="network_interface" default="enp8s0"/>
+  <arg name="imu_topic" default="/mavros/imu/data_raw"/> <!-- use this name so that we do not need to rename the topic in LI-Init -->
+  <arg name="frame_id" default="go2_imu_link"/>
+  <arg name="unitree_low_state_topic" default="rt/lowstate"/>
+
+  <node pkg="unitree_sdk2_ros_bridge"
+        type="go2_imu_bridge"
+        name="go2_imu_bridge"
+        output="screen">
+    <param name="network_interface" value="$(arg network_interface)"/>
+    <param name="imu_topic" value="$(arg imu_topic)"/>
+    <param name="frame_id" value="$(arg frame_id)"/>
+    <param name="unitree_low_state_topic" value="$(arg unitree_low_state_topic)"/>
+
+    <rosparam param="orientation_covariance_diagonal">[0.001, 0.001, 0.001]</rosparam>
+    <rosparam param="angular_velocity_covariance_diagonal">[0.001, 0.001, 0.001]</rosparam>
+    <rosparam param="linear_acceleration_covariance_diagonal">[0.01, 0.01, 0.01]</rosparam>
+  </node>
+</launch>

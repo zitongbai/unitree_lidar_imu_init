@@ -1,0 +1,33 @@
+# Build artifacts
+build/
+devel/
+install/
+log/
+logs/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+compile_commands.json
+Makefile
+CTestTestfile.cmake
+cmake_install.cmake
+install_manifest.txt
+
+# ROS / colcon / catkin
+.catkin_tools/
+.colcon/
+CATKIN_IGNORE
+
+# IDE and editor files
+.idea/
+.vscode/
+.codex
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
