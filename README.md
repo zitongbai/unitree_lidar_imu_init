@@ -1,14 +1,27 @@
 # unitree_lidar_imu_init
 
-ROS1 tooling for running LiDAR-IMU initialization with a Unitree Go2 IMU and a Livox MID-360 LiDAR.
+This repository provides a **Docker-only** workflow to identify the **extrinsic calibration** (relative position and orientation) between a Unitree robot's onboard IMU and a LiDAR sensor (primarily **Livox MID-360**).
 
-This repository provides:
+It is designed for the Unitree family of robots (e.g. Go2) where you want to estimate the rigid transform between:
 
-- a Docker environment based on `osrf/ros:noetic-desktop-full`
-- a ROS1 bridge package that converts Unitree SDK2 `LowState` IMU data into `sensor_msgs/Imu`
-- an integrated setup that builds the upstream dependencies needed to run [`LiDAR_IMU_Init`](https://github.com/hku-mars/LiDAR_IMU_Init)
+- **LiDAR frame** (Livox MID-360)
+- **IMU frame** (Unitree onboard IMU exposed via Unitree SDK2 `LowState`)
 
-The main goal is to make the Go2 IMU usable in a standard ROS1 LiDAR-IMU initialization pipeline without manually stitching together Unitree SDK2, Livox drivers, and the initialization package.
+To avoid ROS/Ubuntu version mismatches and simplify setup, this repository **only supports Docker deployment**.
+
+## Acknowledgements / Upstream Dependency
+
+This project is built on top of **@hku-mars/LiDAR_IMU_Init** and uses it as the core initialization / estimation pipeline:
+
+- `hku-mars/LiDAR_IMU_Init`
+
+This repository does **not** vendor the upstream code; the Docker image clones and builds it during the image build stage.
+
+## What This Repository Provides
+
+- A Docker environment based on `osrf/ros:noetic-desktop-full`
+- A ROS1 bridge package that converts Unitree SDK2 `LowState` IMU data into `sensor_msgs/Imu`
+- An integrated Docker build that fetches and builds required upstream dependencies to run `LiDAR_IMU_Init`
 
 ## Repository Layout
 
@@ -43,14 +56,7 @@ During image build, `docker/config/MID360_config.json` replaces the default `MID
 - Docker
 - an X11 environment if you want to use GUI tools such as RViz
 - a host network setup that can receive Livox MID-360 UDP traffic
-- access to the network interface connected to the Unitree Go2
-
-This project is currently set up around:
-
-- Ubuntu 20.04 style ROS1 workflow
-- ROS Noetic
-- Livox MID-360
-- Unitree Go2 low state IMU stream over Unitree SDK2
+- access to the network interface connected to the Unitree robot
 
 ## Build Docker Image
 
@@ -94,7 +100,7 @@ source devel/setup.bash
 roslaunch livox_ros_driver2 msg_MID360.launch
 ```
 
-### 2. Start Go2 IMU bridge
+### 2. Start Unitree IMU bridge
 
 ```bash
 docker exec -it <container_name_or_id> bash
@@ -103,7 +109,7 @@ source devel/setup.bash
 roslaunch unitree_sdk2_ros_bridge go2_imu_bridge.launch network_interface:=enp8s0
 ```
 
-`network_interface` must be the host/container NIC that can reach the Go2.
+`network_interface` must be the host/container NIC that can reach the robot.
 
 By default, the bridge publishes IMU data to:
 
@@ -111,9 +117,9 @@ By default, the bridge publishes IMU data to:
 /mavros/imu/data_raw
 ```
 
-That topic name is intentionally chosen so it can be consumed by `LiDAR_IMU_Init` without extra remapping.
+That topic name is chosen so it can be consumed by `LiDAR_IMU_Init` without extra remapping.
 
-### 3. Run LiDAR-IMU initialization
+### 3. Run LiDAR-IMU initialization (extrinsic calibration)
 
 ```bash
 docker exec -it <container_name_or_id> bash
@@ -172,11 +178,11 @@ rostopic echo /mavros/imu/data_raw
 
 ## Notes and Limitations
 
-- This repository does not vendor `LiDAR_IMU_Init`; the Docker build clones it from the upstream repository.
-- The setup is currently optimized for Docker-based execution rather than native host installation.
+- The setup is optimized for Docker-based execution rather than native host installation.
 - The exact network interface name depends on the machine. Replace `enp8s0` with your actual NIC.
 - Successful runtime depends on correct Livox and Unitree network configuration outside this repository.
+- Upstream dependencies keep their own licenses.
 
 ## License
 
-The ROS bridge package is released under the MIT license. Upstream dependencies keep their own licenses.
+The ROS bridge package is released under the MIT license.
