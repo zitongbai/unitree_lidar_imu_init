@@ -17,6 +17,12 @@ This project is built on top of **@hku-mars/LiDAR_IMU_Init** and uses it as the 
 
 This repository does **not** vendor the upstream code; the Docker image clones and builds it during the image build stage.
 
+## Why Unitree SDK2 Instead of Unitree ROS2
+
+The core calibration pipeline comes from [`hku-mars/LiDAR_IMU_Init`](https://github.com/hku-mars/LiDAR_IMU_Init.git), which is a ROS1 package. Because the calibration node runs in ROS1 / ROS Noetic, this repository cannot directly use Unitree's ROS2 interface as the IMU source.
+
+Instead, the Docker image builds `unitree_sdk2` and this repository provides a small ROS1 bridge package. The bridge reads Unitree SDK2 `LowState` IMU data and republishes it as ROS1 `sensor_msgs/Imu`, allowing it to be consumed by `LiDAR_IMU_Init`.
+
 ## What This Repository Provides
 
 - A Docker environment based on `osrf/ros:noetic-desktop-full`
@@ -60,8 +66,10 @@ During image build, `docker/config/MID360_config.json` replaces the default `MID
 
 ## Build Docker Image
 
+Use host networking during build so the Docker build steps can access a host-side proxy such as `127.0.0.1:10808`.
+
 ```bash
-docker build -f docker/Dockerfile -t unitree_lidar_imu_init:latest .
+docker build --network=host -f docker/Dockerfile -t unitree_lidar_imu_init:latest .
 ```
 
 ## Run Docker Container
@@ -76,7 +84,6 @@ docker run --rm -it \
   --env DISPLAY=$DISPLAY \
   --env QT_X11_NO_MITSHM=1 \
   --volume /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  --device /dev/dri \
   unitree_lidar_imu_init:latest bash
 ```
 

@@ -1,6 +1,20 @@
 
 FROM osrf/ros:noetic-desktop-full
 
+ARG http_proxy=http://127.0.0.1:10808
+ARG https_proxy=http://127.0.0.1:10808
+ARG all_proxy=socks5://127.0.0.1:10808
+ARG HTTP_PROXY=http://127.0.0.1:10808
+ARG HTTPS_PROXY=http://127.0.0.1:10808
+ARG ALL_PROXY=socks5://127.0.0.1:10808
+
+ENV http_proxy=${http_proxy} \
+    https_proxy=${https_proxy} \
+    all_proxy=${all_proxy} \
+    HTTP_PROXY=${HTTP_PROXY} \
+    HTTPS_PROXY=${HTTPS_PROXY} \
+    ALL_PROXY=${ALL_PROXY}
+
 SHELL ["/bin/bash", "-lc"]
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -100,3 +114,10 @@ RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc \
  && echo "source /root/ws_livox_legacy/devel/setup.bash" >> /root/.bashrc \
  && echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc \
  && echo "source /root/ws_livox/devel/setup.bash" >> /root/.bashrc
+
+ENV http_proxy= \
+    https_proxy= \
+    all_proxy= \
+    HTTP_PROXY= \
+    HTTPS_PROXY= \
+    ALL_PROXY=
