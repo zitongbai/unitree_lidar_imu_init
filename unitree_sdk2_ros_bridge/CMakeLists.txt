@@ -24,16 +24,28 @@ add_executable(go2_imu_bridge
   src/go2_imu_bridge.cpp
 )
 
+add_executable(g1_imu_bridge
+  src/g1_imu_bridge.cpp
+)
+
 target_link_libraries(go2_imu_bridge
   ${catkin_LIBRARIES}
   unitree_sdk2
   Threads::Threads
 )
 
-install(TARGETS go2_imu_bridge
+target_link_libraries(g1_imu_bridge
+  ${catkin_LIBRARIES}
+  unitree_sdk2
+  Threads::Threads
+)
+
+install(TARGETS go2_imu_bridge g1_imu_bridge
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(FILES launch/go2_imu_bridge.launch
+install(FILES
+  launch/go2_imu_bridge.launch
+  launch/g1_imu_bridge.launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
