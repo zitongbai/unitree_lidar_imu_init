@@ -1,13 +1,19 @@
 # unitree_lidar_imu_init
 
-This repository provides a **Docker-only** workflow to identify the **extrinsic calibration** (relative position and orientation) between a Unitree robot's onboard IMU and a LiDAR sensor (primarily **Livox MID-360**).
+This project originates from our setup where a Livox MID-360 LiDAR is mounted on the Unitree Go2 robot for SLAM-based localization. However, there exists both translational and rotational offsets between the LiDAR and the robot’s base link. In particular, the LiDAR is mounted with a tilt, making accurate extrinsic calibration essential. Without proper calibration, point cloud data cannot be correctly transformed into the base link frame, which further affects downstream processes such as elevation map construction. Therefore, a dedicated tool is required for extrinsic calibration.
 
-It is designed for the Unitree family of robots (e.g. Go2) where you want to estimate the rigid transform between:
+This project targets Unitree robots and the Livox MID-360 LiDAR, and aims to integrate and streamline the complete calibration pipeline based on existing tools. Calibration on the Unitree Go2 is implemented. A G1 secondary IMU bridge is included as an experimental path, but it has not been validated on hardware yet.
+
+The core calibration program is based on:
+[hku-mars/LiDAR_IMU_Init](https://github.com/hku-mars/LiDAR_IMU_Init)
+This program is built on ROS rather than ROS2. Since ROS cannot be directly installed on Ubuntu 22.04 and above, this toolkit uses **Docker** to run the system, avoiding dependency issues and enabling out-of-the-box usage.
+
+This repository provides a **Docker-only** workflow to estimate the **extrinsic calibration** (i.e., relative position and orientation) between a Unitree robot’s onboard IMU and a LiDAR sensor (primarily the **Livox MID-360**).
+
+It is designed for the Unitree family of robots (e.g., Go2), where the goal is to estimate the rigid transformation between:
 
 - **LiDAR frame** (Livox MID-360)
-- **IMU frame** (Unitree onboard IMU exposed via Unitree SDK2 `LowState`)
-
-To avoid ROS/Ubuntu version mismatches and simplify setup, this repository **only supports Docker deployment**.
+- **IMU frame** (Unitree onboard IMU exposed through Unitree SDK2)
 
 ## Acknowledgements / Upstream Dependency
 
@@ -35,9 +41,16 @@ Instead, the Docker image builds `unitree_sdk2` and this repository provides a s
 .
 |-- docker/
 |   |-- Dockerfile
-|   `-- config/MID360_config.json
+|   |-- build.sh
+|   |-- run.sh
+|   |-- enter.sh
+|   `-- config/
+|       |-- MID360_config.json
+|       `-- mid360.yaml
 `-- unitree_sdk2_ros_bridge/
+    |-- launch/g1_imu_bridge.launch
     |-- launch/go2_imu_bridge.launch
+    |-- src/g1_imu_bridge.cpp
     |-- src/go2_imu_bridge.cpp
     |-- CMakeLists.txt
     `-- package.xml
@@ -56,6 +69,8 @@ The Docker image installs and builds:
 - this repository's `unitree_sdk2_ros_bridge`
 
 During image build, `docker/config/MID360_config.json` replaces the default `MID360_config.json` inside `livox_ros_driver2`.
+
+> Remember to modify the network configuration in `docker/config/MID360_config.json` according to your actual setup. 
 
 ## Prerequisites
 
@@ -95,6 +110,8 @@ Once inside the container, the following workspaces are sourced automatically fr
 - `/root/ws_livox/devel/setup.bash`
 
 ## Runtime Workflow
+
+Connect your PC with Unitree Robot via Ethernet cable and setup your network in PC according to Unitree's docs. 
 
 Open three terminals in the running container.
 
